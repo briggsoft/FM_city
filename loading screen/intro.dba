@@ -1,0 +1,56 @@
+Rem *** Include File: intro.dba ***
+Rem Created: 5/24/2013 3:22:37 PM
+
+intro:
+rem Init
+sync on : sync rate 0 : `hide mouse
+
+rem Switch display mode if available
+if check display mode(1024,768,32)=1 then set display mode 1024,768,32
+color backdrop 0
+
+rem Load animation
+load animation "movie\1.avi",1
+rem Direct animation to texture
+play animation to image 1,1,0,0,320,240
+stop animation 1
+
+
+rem Create 3D
+for p=1 to 3
+ make object plain p,320,240,10
+ scale object p,p*250,p*250,p*250
+ if p>1 then ghost object on p,2
+ texture object p,1
+next p
+set object light 1,0
+
+rem Setup camera
+position camera 0,0,-700
+rotate camera 0,0,0
+
+
+
+
+rem Main loop
+begin=1
+ rem Begin animation
+ if begin=1
+  begin=0
+  restore
+  stop animation 1
+  play animation 1
+ endif
+` if  then goto maingame
+   repeat
+     `center text screen width()/2,screen height()-90,"Press Space Key to skip cutscene"
+      sync
+   until spacekey()=1
+   stop animation 1
+   goto maingame
+   delete animation 1
+  end
+ sync
+
+
+

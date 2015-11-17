@@ -1,0 +1,76 @@
+sync rate 60
+sync on : hide mouse
+set display mode 1280,800,32
+position camera 0,0,0
+point camera 0,0,-700
+`color backdrop rgb(255, 255, 0)
+
+`orange image
+rem Edit The orange picture to look pretty
+load image "media/exit.png",4,0,0
+load image "media/start.png",3,0,0
+load image "media/title.png",2,0,0
+Load image "media/orange.png",1,0,0
+load image "media/press.png",5,0,0
+
+`exit
+`sprite 20,900,700,4
+
+`start
+`sprite 19,50,700,3
+
+`Title
+sprite 17,180,20,2
+rotate sprite 17,-5
+
+`create a sky
+sky=1000
+make object sphere sky,300
+scale object sky,-2000,-1000,-1000
+
+`Press start shit
+Fag =1001
+make object plain Fag,0.999,0.4,0
+set object fag,1,1,1
+position object fag,-0.001,-0.5,-1
+texture object fag,5
+set object light fag,5
+
+`fog properties
+fog on               ;`turn the fog on
+fog distance 200
+fog color RGB(500,500,0)
+
+`object
+make object plain 18,1,1,0
+set object 18,1,1,1
+position object 18,0,0,0
+scale object 18,800,600,0
+color object 18,rgb(255, 255, 0)
+texture object 18,1
+set object light 18,5
+
+Do
+
+`Orange Image Scroll
+scroll object texture 18,0.00031,0.00031
+
+`Press any Key [Effect]
+Position object fag,0,-0.5+(cos(a#)*0.1),-0.1
+`yrotate object fag,a#
+`zrotate object fag,a#
+inc a#,0.5
+
+`press key executed
+if spacekey()=1 then Goto intro
+`if spacekey()=1 then Goto maingame
+
+
+
+`verison
+text 0,0," Verison 0.5"
+
+sync
+loop
+
+

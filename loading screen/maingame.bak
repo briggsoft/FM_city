@@ -1,0 +1,196 @@
+Rem *** Include File: maingame.dba ***
+Rem Created: 5/24/2013 3:33:12 PM
+
+
+maingame:
+delete object 1
+delete object sky
+delete object fag
+backdrop on
+autocam off
+fog off
+`delete sprite 17
+delete object 1
+delete object 2
+delete object 3
+load image "files\weapon\sword.png",12
+
+
+
+
+sync on
+sync rate 60
+hide mouse
+autocam off
+
+radius# = 100.0
+gravity# = -0.1
+slope# = 0.5
+ground = 1
+jumptimer = 0
+
+
+
+gosub makeLevel
+gosub makePlayer
+
+
+do
+
+   gosub MovePlayer
+
+   rem change view
+   if inkey$()="v" and vtimer<timer() then vtimer = timer()+300 : view = 1-view
+
+
+   positionCameraToObject(2,view)
+
+   `text 0,20,"x rot: "+str$(object angle x(2))
+   `text 0,40,"y rot: "+str$(object angle y(2))
+  ` text 0,60,"z rot: "+str$(object angle z(2))
+   text 0,0,"FPS: "+str$(screen fps())
+   text 0,15,"On The Ground: "+str$(ground)
+  ` text 0,120,"x = "+str$(object position x(2))
+   `text 0,140,"y = "+str$(object position y(2))
+   `text 0,160,"z = "+str$(object position z(2))
+
+   if shiftkey() = 1 then position object 2,0,50,0
+
+`move camera -150
+
+   sync
+loop
+
+makeLevel:
+`Steping sound
+frame#=4
+speed#=1.0
+step1#=1
+`step2#=0
+`load object "8b\8b.x",1
+`load object "8b\1m.x",1
+`load object "dbmap\8d.dbo",1
+load object "files\Fmcrap\Fmcrap.x",1
+`load sound "sounds\der.wav",1
+
+
+   sc_setupComplexObject 1,1,2
+return
+
+`Steping sound loop
+do
+inc frame#,speed#
+set object frame 1,frame#
+if frame#=step1# then play sound 1
+sync
+loop
+
+
+makePlayer:
+   `make object plain 2,10,14
+   load object "files\weapon\weapon.x",2
+   scale object 2,35,72,20
+   texture object 2,12
+   position object 2,0,55,0
+   sc_setupObject 2,0,1
+return
+
+
+
+
+movePlayer:
+
+   rem rotate player with mouse
+   yrotate object 2,object angle y(2)+mousemovex()/3.0
+   xrotate object 2,object angle x(2)+mousemovey()/3.0
+
+   oldx# = object position x(2)
+   oldy# = object position y(2)
+   oldz# = object position z(2)
+
+   rem apply gravity, and user changes to movement
+   angy# = object angle y(2)
+   vx# = 0
+   vz# = 0
+
+   if vy#=0 and jumptimer=0 then vy# = vy# + 10*gravity# else vy# = vy# + gravity#
+   if keystate(32)=1 then vx# = vx# + cos(angy#) : vz# = vz# - sin(angy#)
+   if keystate(30)=1 then vx# = vx# - cos(angy#) : vz# = vz# + sin(angy#)
+   if keystate(31)=1 then vx# = vx# - sin(angy#) : vz# = vz# - cos(angy#)
+   if keystate(17)=1 then vx# = vx# + sin(angy#) : vz# = vz# + cos(angy#)
+   rem only jump if on ground, and a certain time after last jump
+   if ground=1
+      if spacekey()=1 and jumptimer=0 then vy# = vy# + 3.0 : jumptimer = 0
+   endif
+
+   x# = oldx#+vx#
+   y# = oldy#+vy#
+   z# = oldz#+vz#
+
+   collide = sc_SphereCastGroup(1,oldx#,oldy#,oldz#,oldx#,oldy#+vy#,oldz#,radius#,0)
+
+   if collide>0
+
+      ny# = sc_getCollisionNormalY()
+
+      if abs(ny#)>slope#
+         rem FLAT, stick
+         oldy# = sc_getStaticCollisionY()
+
+      else
+         rem STEEP, slide
+         x# = x# - oldx# : z# = z# - oldz#
+         oldx# = sc_getCollisionSlideX()
+         oldy# = sc_getCollisionSlideY()
+         oldz# = sc_getCollisionSlideZ()
+         x# = x# + oldx# : z# = z# + oldz#
+      endif
+
+      if ny#>slope#
+         rem only on ground if standing on flat ground
+         ground = 1
+         vy# = 0
+      else
+         ground = 0
+         rem if player has hit a flat ceiling then stop vy# movement
+         if ny#<-slope# then vy# = gravity#
+      endif
+   else
+      rem nothing below player, not on ground, add vertical speed to player
+      oldy# = oldy# + vy#
+      ground = 0
+   endif
+
+   if ground = 1 and jumptimer>0 then dec jumptimer
+
+
+   collide = sc_SphereSlideGroup(1,oldx#,oldy#,oldz#,x#,oldy#,z#,radius#,0)
+   if collide>0
+      rem if hit, reposition player, halt movement vector
+      x# = sc_getCollisionSlideX()
+      oldy# = sc_getCollisionSlideY()
+      z# = sc_getCollisionSlideZ()
+      vx# = 0
+      vz# = 0
+
+   endif
+
+   rem position the player
+   position object 2,x#,oldy#,z#
+
+   sc_updateObject 2
+
+return
+
+
+function positionCameraToObject(obj,thirdPerson)
+   position camera object position x(2),object position y(2),object position z(2)
+   rotate camera object angle x(2),object angle y(2),object angle z(2)
+   if thirdPerson=1
+      pitch camera down 10
+      move camera -30
+   endif
+endfunction
+
+if memblock exist(1) then delete memblock 1
+
