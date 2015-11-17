@@ -1,0 +1,6 @@
+snv_F = Front
+snv_D = bottom Down
+snv_B = Back
+snv_R = Right
+snv_L = Left
+Snv_U = Top
